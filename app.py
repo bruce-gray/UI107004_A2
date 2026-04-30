@@ -1,5 +1,5 @@
 import mysql.connector
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 # setup database connection
 db = mysql.connector.connect (
@@ -23,6 +23,25 @@ def get_books():
     output = cursor.fetchall()
     # returns contents of output as JSON
     return jsonify(output)
+
+# user story 2 - calls stored procedure to check out a book
+# uses a POST request since this sends data
+@app.route('/checkout', methods=['POST'])
+def checkout_book():
+    cursor = db.cursor(dictionary=True)
+    # parse the JSON body of the POST request, extract book_id and member_id
+    data = request.get_json()
+    book_id = data['book_id']
+    member_id = data['member_id']
+    # calls my 'checkout' stored procedure. db.commit() is required after any write operations
+    try:
+        cursor.callproc('checkout', [book_id, member_id])
+        db.commit()
+        return jsonify({'message': 'Book checked out successfully.'})
+    # if the book is unavailable my stored procedure returns an error, convert this into a useful response in JSON
+    # HTTP status code 400 means bad request
+    except mysql.connector.Error as e:
+        return jsonify({'Error': str(e)}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)
