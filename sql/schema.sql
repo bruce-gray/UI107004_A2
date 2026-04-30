@@ -1,6 +1,7 @@
 CREATE SCHEMA IF NOT EXISTS libraryinventory;
 USE libraryinventory;
 
+DROP PROCEDURE IF EXISTS checkout;
 DROP TABLE IF EXISTS loans;
 DROP TABLE IF EXISTS books;
 DROP TABLE IF EXISTS members;
